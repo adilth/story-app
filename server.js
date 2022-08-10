@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const morgon = require("morgon");
+const morgan = require("morgan");
 const { engine } = require("express-handlebars");
 const connectDB = require("./config/db");
 const index = require("./routes/index");
@@ -9,17 +9,20 @@ require("dotenv").config({ path: "./config/config.env" });
 
 //loaging
 if (process.env.NODE_ENV === "development") {
-  app.use(morgon("dev"));
+  app.use(morgan("dev"));
 }
 
 //handlebars
-app.engine("handlebars", engine({ extname: ".hbs" }));
+app.engine("handlebars", engine({ defaultLayout: "main", extname: ".hbs" }));
 app.set("view engine", "handlebars");
 app.set("views", "./views");
 
+//static folder
+app.use(express.static("public"));
+
 // routes
 app.use("/", index);
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3001;
 
 connectDB();
 app.listen(
