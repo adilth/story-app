@@ -1,7 +1,9 @@
 const express = require("express");
 const app = express();
 const morgan = require("morgan");
+const mongoose = require("mongoose");
 const { engine } = require("express-handlebars");
+const methodOverride = require("method-override");
 const connectDB = require("./config/db");
 const index = require("./routes/index");
 //load config
@@ -11,6 +13,10 @@ require("dotenv").config({ path: "./config/config.env" });
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
+
+// Body parser
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 
 //handlebars
 app.engine("handlebars", engine({ defaultLayout: "main", extname: ".hbs" }));
