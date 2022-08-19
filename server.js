@@ -1,11 +1,11 @@
 const express = require("express");
 const app = express();
 const morgan = require("morgan");
-const mongoose = require("mongoose");
 const passport = require("passport");
 const session = require("express-session");
 const { engine } = require("express-handlebars");
 const methodOverride = require("method-override");
+const MongoStore = require("connect-mongo");
 const connectDB = require("./config/db");
 const index = require("./routes/index");
 const authroute = require("./routes/auth");
@@ -36,6 +36,7 @@ app.use(
     resave: false,
     saveUninitialized: true,
     cookie: { secure: true },
+    store: MongoStore.create({ mongoUrl: process.env.MONGODB_URL }),
   })
 );
 
