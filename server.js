@@ -9,6 +9,7 @@ const MongoStore = require("connect-mongo");
 const connectDB = require("./config/db");
 const index = require("./routes/index");
 const authroute = require("./routes/auth");
+const storyRoute = require("./routes/stories");
 //load config
 require("dotenv").config({ path: "./config/config.env" });
 
@@ -16,6 +17,13 @@ require("dotenv").config({ path: "./config/config.env" });
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
+const {
+  formatData,
+  stripTags,
+  truncate,
+  editIcon,
+  select,
+} = require("./helpers/hbs");
 
 //passport config
 
@@ -24,8 +32,25 @@ require("./config/passport")(passport);
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
+// Method overwrite
+app.use(
+  methodOverride((req, res) => {
+    if (req.body && typeof req.body === "object" && "_method" in req.body) {
+      let method = req.body._method;
+      delete req.body._method;
+      return method;
+    }
+  })
+);
 //handlebars
-app.engine("handlebars", engine({ defaultLayout: "main", extname: ".hbs" }));
+app.engine(
+  "handlebars",
+  engine({
+    helpers: { formatData, stripTags, truncate, editIcon, select },
+    defaultLayout: "main",
+    extname: ".hbs",
+  })
+);
 app.set("view engine", "handlebars");
 app.set("views", "./views");
 
@@ -44,12 +69,19 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+//set global var
+app.use((req, res, next) => {
+  res.locals.user = req.user || null;
+  next();
+});
+
 //static folder
 app.use(express.static("public"));
 
 // routes
 app.use("/", index);
 app.use("/auth", authroute);
+app.use("/stories", storyRoute);
 
 const PORT = process.env.PORT || 3001;
 
